@@ -2,7 +2,7 @@ import funciones as fn
 
 # Carga inicial de los países desde el archivo CSV
 paises = fn.cargar_paises()
-print(f"Se cargaron {len(paises)} países desde el archivo.")
+print(f"{fn.VERDE}Se cargaron {len(paises)} países desde el archivo.{fn.RESET}")
 
 # Menú principal: se repite hasta que el usuario elige 0.
 # Agregar y actualizar guardan el CSV en el momento,
@@ -25,15 +25,15 @@ try:
         opcion = input("Seleccioná una opción: ").strip()
 
         if opcion == "0":
-            print("Programa finalizado.")
+            print(f"{fn.VERDE}Programa finalizado.{fn.RESET}")
             break
         elif opcion == "2":
             fn.agregar_pais(paises)
         elif opcion not in ("1", "3", "4", "5", "6", "7", "8", "9"):
-            print("Opción inválida. Elegí una opción del menú (0 a 9).")
+            print(f"{fn.ROJO}Opción inválida. Elegí una opción del menú (0 a 9).{fn.RESET}")
         elif not paises:
             # Las demás opciones necesitan al menos un país cargado
-            print("Error: no hay países cargados. Agregá uno primero (opción 2).")
+            print(f"{fn.ROJO}Error: no hay países cargados. Agregá uno primero (opción 2).{fn.RESET}")
         elif opcion == "1":
             fn.mostrar_paises(paises)
         elif opcion == "3":
@@ -52,4 +52,5 @@ try:
             fn.mostrar_estadisticas(paises)
 except (KeyboardInterrupt, EOFError):
     # Ctrl+C o fin de entrada: se sale sin mostrar el error de Python
-    print("\nPrograma interrumpido por el usuario.")
+    print(f"{fn.ROJO}\nPrograma interrumpido por el usuario.{fn.RESET}")
+

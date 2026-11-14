@@ -1,48 +1,59 @@
 import csv
 import os
 
-ARCHIVO_CSV = os.path.join(os.path.dirname(__file__), "dataset.csv")
+# Ruta del CSV: se busca en la misma carpeta que este archivo,
+# así el programa funciona sin importar desde qué carpeta se ejecute.
+ARCHIVO_CSV = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dataset.csv")
 CAMPOS = ["nombre", "poblacion", "superficie", "continente"]
 
 
 def cargar_paises(ruta=ARCHIVO_CSV):
-    """Lee el CSV y devuelve una lista de diccionarios."""
+    """Lee el CSV y devuelve una lista de diccionarios.
+    Las filas con errores de formato o repetidas se informan y se omiten."""
     paises = []
     try:
         with open(ruta, "r", encoding="utf-8-sig", newline="") as archivo:
             lector = csv.DictReader(archivo)
             if lector.fieldnames is None or not all(campo in lector.fieldnames for campo in CAMPOS):
-                raise ValueError("El CSV no contiene todas las columnas requeridas.")
+                print(f"Error: el CSV debe tener las columnas {', '.join(CAMPOS)}.")
+                return paises
 
-            for numero_fila, fila in enumerate(lector, start=2):
+            # La línea 1 es el encabezado, por eso los datos empiezan en la 2
+            for numero_linea, fila in enumerate(lector, start=2):
                 try:
                     nombre = fila["nombre"].strip()
                     continente = fila["continente"].strip()
                     poblacion = int(fila["poblacion"])
                     superficie = int(fila["superficie"])
-
-                    if not nombre or not continente or poblacion < 0 or superficie <= 0:
+                    if not nombre or not continente or poblacion <= 0 or superficie <= 0:
                         raise ValueError
-
-                    paises.append({
-                        "nombre": nombre,
-                        "poblacion": poblacion,
-                        "superficie": superficie,
-                        "continente": continente
-                    })
                 except (ValueError, TypeError, AttributeError):
-                    print(f"Aviso: se omitió la fila {numero_fila} por tener datos inválidos.")
+                    # TypeError/AttributeError: la fila tiene columnas de menos
+                    print(f"Aviso: línea {numero_linea} del CSV con datos inválidos, se omite.")
+                    continue
+
+                if existe_pais(paises, nombre):
+                    print(f"Aviso: línea {numero_linea} repite el país '{nombre}', se omite.")
+                    continue
+
+                paises.append({
+                    "nombre": nombre,
+                    "poblacion": poblacion,
+                    "superficie": superficie,
+                    "continente": continente,
+                })
 
     except FileNotFoundError:
-        print(f"Error: no se encontró el archivo {ruta}.")
-    except (OSError, csv.Error, ValueError) as error:
+        print(f"Aviso: no se encontró el archivo {ruta}. Se empieza con una lista vacía.")
+    except (OSError, UnicodeDecodeError, csv.Error) as error:
         print(f"Error al leer el CSV: {error}")
 
     return paises
 
 
 def guardar_paises(paises, ruta=ARCHIVO_CSV):
-    """Guarda la lista completa de países en el CSV."""
+    """Sobrescribe el CSV con la lista completa de países.
+    Devuelve True si se guardó correctamente y False si hubo un error."""
     try:
         with open(ruta, "w", encoding="utf-8", newline="") as archivo:
             escritor = csv.DictWriter(archivo, fieldnames=CAMPOS)
@@ -50,97 +61,109 @@ def guardar_paises(paises, ruta=ARCHIVO_CSV):
             escritor.writerows(paises)
         return True
     except OSError as error:
-        print(f"No se pudieron guardar los datos: {error}")
+        print(f"Error: no se pudieron guardar los datos: {error}")
         return False
 
 
 def mostrar_paises(paises):
+    """Muestra una lista de países en forma de tabla."""
     if not paises:
         print("No se encontraron países.")
         return
 
-    print(f"\n{'PAÍS':<22} {'POBLACIÓN':>15} {'SUPERFICIE km²':>17} {'CONTINENTE':<15}")
-    print("-" * 75)
+    print(f"\n{'PAÍS':<20} {'POBLACIÓN':>15} {'SUPERFICIE km²':>16}   CONTINENTE")
+    print("-" * 70)
     for pais in paises:
-        print(f"{pais['nombre']:<22} {pais['poblacion']:>15,} {pais['superficie']:>17,} {pais['continente']:<15}")
+        print(f"{pais['nombre']:<20} {pais['poblacion']:>15,} "
+              f"{pais['superficie']:>16,}   {pais['continente']}")
+    print(f"\nTotal: {len(paises)} país(es).")
 
 
-def leer_entero(mensaje, minimo=0):
+def leer_entero(mensaje, minimo=1):
+    """Pide un número entero mayor o igual a 'minimo' y lo repite hasta que sea válido."""
     while True:
         try:
             valor = int(input(mensaje))
             if valor < minimo:
-                print(f"El valor debe ser mayor o igual que {minimo}.")
+                print(f"Error: el valor debe ser mayor o igual a {minimo}.")
             else:
                 return valor
         except ValueError:
-            print("Entrada inválida. Ingresá un número entero.")
+            print("Error: ingresá un número entero (sin puntos ni comas).")
 
 
-def existe_pais_exacto(paises, nombre):
-    """Verifica si un país ya existe por coincidencia exacta."""
-    nombre_limpio = nombre.strip().casefold()
-    return any(p["nombre"].casefold() == nombre_limpio for p in paises)
+def existe_pais(paises, nombre):
+    """Devuelve True si ya hay un país con ese nombre (sin importar mayúsculas)."""
+    nombre = nombre.strip().casefold()
+    return any(pais["nombre"].casefold() == nombre for pais in paises)
 
 
 def agregar_pais(paises):
+    """Opción 2: pide todos los datos de un país nuevo, lo agrega y guarda el CSV.
+    No se permiten campos vacíos ni países repetidos."""
     nombre = input("Nombre del país: ").strip()
     if not nombre:
-        print("El nombre no puede estar vacío.")
+        print("Error: el nombre no puede estar vacío.")
         return
-
-    if existe_pais_exacto(paises, nombre):
-        print("Ese país ya existe en el dataset.")
+    if existe_pais(paises, nombre):
+        print(f"Error: el país '{nombre}' ya existe en el dataset.")
         return
 
     poblacion = leer_entero("Población: ")
-    superficie = leer_entero("Superficie en km² (mayor que 0): ", 1)
+    superficie = leer_entero("Superficie en km²: ")
     continente = input("Continente: ").strip()
-
     if not continente:
-        print("El continente no puede estar vacío.")
+        print("Error: el continente no puede estar vacío. No se agregó el país.")
         return
 
     paises.append({
-        "nombre": nombre.title(),
+        "nombre": nombre,
         "poblacion": poblacion,
         "superficie": superficie,
-        "continente": continente.title()
+        "continente": continente,
     })
 
     if guardar_paises(paises):
-        print("País agregado y guardado correctamente.")
+        print(f"Éxito: '{nombre}' fue agregado y guardado en el CSV.")
 
 
 def actualizar_pais(paises):
-    nombre = input("País que desea actualizar: ").strip()
-    resultados = buscar_paises(paises, nombre)
-
+    """Opción 3: busca un país y actualiza su población y superficie."""
+    texto = input("País que desea actualizar: ").strip()
+    resultados = buscar_paises(paises, texto)
     if not resultados:
-        print("No se encontró el país.")
+        print(f"Error: no se encontró el país '{texto}'.")
         return
-    pais = []
-    if len(resultados) > 1:
+
+    # Si se escribió el nombre exacto se usa ese; si no, se elige entre las coincidencias
+    exactos = [p for p in resultados if p["nombre"].casefold() == texto.casefold()]
+    if exactos:
+        pais = exactos[0]
+    elif len(resultados) == 1:
+        pais = resultados[0]
+    else:
         print("\nSe encontraron varias coincidencias:")
         for i, p in enumerate(resultados, start=1):
             print(f"{i}. {p['nombre']}")
-        indice = leer_entero("Seleccioná el número del país: ", 1)
-        if indice > len(resultados):
-            print("Selección inválida.")
-            return
+        indice = leer_entero("Seleccioná el número del país: ")
+        while indice > len(resultados):
+            print(f"Error: elegí un número entre 1 y {len(resultados)}.")
+            indice = leer_entero("Seleccioná el número del país: ")
         pais = resultados[indice - 1]
-    else:
-        pais = resultados[0]
 
-    print(f"País seleccionado: {pais['nombre']}")
+    print(f"País seleccionado: {pais['nombre']} "
+          f"(población: {pais['poblacion']:,} | superficie: {pais['superficie']:,} km²)")
+    # Como el diccionario está dentro de la lista, el cambio se ve en la lista
     pais["poblacion"] = leer_entero("Nueva población: ")
-    pais["superficie"] = leer_entero("Nueva superficie en km² (mayor que 0): ", 1)
+    pais["superficie"] = leer_entero("Nueva superficie en km²: ")
 
     if guardar_paises(paises):
-        print("Datos actualizados correctamente.")
+        print(f"Éxito: '{pais['nombre']}' fue actualizado y guardado en el CSV.")
 
 
 def buscar_paises(paises, texto):
+    """Devuelve los países cuyo nombre contiene el texto (coincidencia parcial).
+    Si se escribe el nombre completo también lo encuentra (coincidencia exacta)."""
     texto = texto.strip().casefold()
     if not texto:
         return []
@@ -148,52 +171,73 @@ def buscar_paises(paises, texto):
 
 
 def buscar_menu(paises):
-    texto = input("Ingresá el nombre completo o una parte: ")
-    mostrar_paises(buscar_paises(paises, texto))
+    """Opción 4: pide un texto y muestra las coincidencias."""
+    texto = input("Ingresá el nombre completo o una parte: ").strip()
+    if not texto:
+        print("Error: la búsqueda no puede estar vacía.")
+        return
+    resultado = buscar_paises(paises, texto)
+    if resultado:
+        mostrar_paises(resultado)
+    else:
+        print(f"No se encontraron países que coincidan con '{texto}'.")
 
 
 def filtrar_continente(paises):
+    """Opción 5: muestra los países del continente indicado."""
+    continentes = sorted({pais["continente"] for pais in paises})
+    print("Continentes disponibles: " + ", ".join(continentes))
     continente = input("Continente: ").strip().casefold()
+
     resultado = [p for p in paises if p["continente"].casefold() == continente]
-    mostrar_paises(resultado)
+    if resultado:
+        mostrar_paises(resultado)
+    else:
+        print("No hay países en ese continente. Escribilo como aparece en la lista.")
 
 
 def filtrar_rango(paises, campo, etiqueta):
-    minimo = leer_entero(f"Valor mínimo de {etiqueta}: ")
-    maximo = leer_entero(f"Valor máximo de {etiqueta}: ")
+    """Opciones 6 y 7: muestra los países cuyo 'campo' ("poblacion" o "superficie")
+    está entre un mínimo y un máximo (ambos incluidos)."""
+    minimo = leer_entero(f"Valor mínimo de {etiqueta}: ", 0)
+    maximo = leer_entero(f"Valor máximo de {etiqueta}: ", 0)
     if minimo > maximo:
-        print("El mínimo no puede ser mayor que el máximo.")
+        print("Error: el mínimo no puede ser mayor que el máximo.")
         return
+
     resultado = [p for p in paises if minimo <= p[campo] <= maximo]
-    mostrar_paises(resultado)
+    if resultado:
+        mostrar_paises(resultado)
+    else:
+        print(f"No hay países con {etiqueta} entre {minimo:,} y {maximo:,}.")
 
 
 def ordenar_paises(paises):
+    """Opción 8: muestra los países ordenados por nombre, población o superficie,
+    en forma ascendente o descendente. sorted() no modifica la lista original."""
     print("1. Nombre\n2. Población\n3. Superficie")
     opcion = input("Criterio: ").strip()
     campos = {"1": "nombre", "2": "poblacion", "3": "superficie"}
-
     if opcion not in campos:
-        print("Opción inválida.")
+        print("Error: criterio inválido.")
         return
 
-    descendente = False
-    if opcion != "1":
-        sentido = input("1. Ascendente\n2. Descendente\nSentido: ").strip()
-        if sentido not in ("1", "2"):
-            print("Sentido inválido.")
-            return
-        descendente = sentido == "2"
+    print("1. Ascendente\n2. Descendente")
+    sentido = input("Sentido: ").strip()
+    if sentido not in ("1", "2"):
+        print("Error: sentido inválido.")
+        return
 
-    resultado = sorted(
-        paises,
-        key=lambda p: p[campos[opcion]].casefold() if opcion == "1" else p[campos[opcion]],
-        reverse=descendente
-    )
-    mostrar_paises(resultado)
+    campo = campos[opcion]
+    if campo == "nombre":
+        clave = lambda p: p["nombre"].casefold()
+    else:
+        clave = lambda p: p[campo]
+    mostrar_paises(sorted(paises, key=clave, reverse=(sentido == "2")))
 
 
 def mostrar_estadisticas(paises):
+    """Opción 9: mayor y menor población, promedios y cantidad por continente."""
     if not paises:
         print("No hay datos para calcular estadísticas.")
         return
@@ -203,14 +247,15 @@ def mostrar_estadisticas(paises):
     promedio_poblacion = sum(p["poblacion"] for p in paises) / len(paises)
     promedio_superficie = sum(p["superficie"] for p in paises) / len(paises)
 
+    # Diccionario acumulador {continente: cantidad}
     cantidades = {}
     for pais in paises:
         continente = pais["continente"]
         cantidades[continente] = cantidades.get(continente, 0) + 1
 
-    print(f"\nMayor población: {mayor['nombre']} ({mayor['poblacion']:,})")
-    print(f"Menor población: {menor['nombre']} ({menor['poblacion']:,})")
-    print(f"Promedio de población: {promedio_poblacion:,.2f}")
+    print(f"\nPaís con mayor población: {mayor['nombre']} ({mayor['poblacion']:,} hab.)")
+    print(f"País con menor población: {menor['nombre']} ({menor['poblacion']:,} hab.)")
+    print(f"Promedio de población: {promedio_poblacion:,.2f} hab.")
     print(f"Promedio de superficie: {promedio_superficie:,.2f} km²")
 
     print("\nCantidad de países por continente:")

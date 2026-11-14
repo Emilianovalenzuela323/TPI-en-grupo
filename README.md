@@ -48,6 +48,31 @@ Menú principal:
 - Búsquedas y filtros sin resultados muestran un mensaje en lugar de fallar.
 - Si se elige una opción inválida, se muestra un mensaje de error y se vuelve al menú.
 
+## Colores en la terminal
+
+Para que los mensajes se distingan mejor, el programa muestra cada tipo de salida con un color:
+
+| Color | Cuándo aparece |
+|---|---|
+| Rojo | Errores y avisos: datos inválidos, país repetido, opción inválida, problemas con el CSV, Ctrl+C. |
+| Verde | Acciones exitosas: países cargados, país agregado o actualizado, programa finalizado. |
+| Cian | Resultados: tablas de países, estadísticas, país seleccionado y continentes disponibles. |
+| Amarillo | Búsquedas y filtros sin resultados. |
+
+El menú y las preguntas al usuario se muestran en el color normal.
+
+Los colores se logran con **códigos ANSI**, que no requieren instalar ninguna librería. En
+`funciones.py` se definen las constantes `ROJO`, `VERDE`, `AMARILLO`, `CIAN` y `RESET`; cada
+mensaje empieza con su color y termina con `RESET` para volver al color normal:
+
+```python
+print(f"{ROJO}Error: el nombre no puede estar vacío.{RESET}")
+```
+
+En Windows, la línea `os.system("")` activa los colores en la consola (cmd o PowerShell). Sin ella,
+podrían verse caracteres raros como `←[91m` en lugar del color. En VS Code y Windows Terminal se
+ven siempre.
+
 ## Ejemplos de entradas y salidas
 
 **Buscar (coincidencia parcial)**

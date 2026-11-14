@@ -1,8 +1,15 @@
 import funciones as fn
 
+# Carga inicial de los países desde el archivo CSV
+paises = fn.cargar_paises()
+print(f"Se cargaron {len(paises)} países desde el archivo.")
 
-def mostrar_menu():
-    print("""
+# Menú principal: se repite hasta que el usuario elige 0.
+# Agregar y actualizar guardan el CSV en el momento,
+# por eso al salir no hace falta volver a guardar.
+try:
+    while True:
+        print("""
 ========== GESTIÓN DE DATOS DE PAÍSES ==========
 1. Mostrar todos los países
 2. Agregar un país
@@ -13,21 +20,22 @@ def mostrar_menu():
 7. Filtrar por rango de superficie
 8. Ordenar países
 9. Mostrar estadísticas
-0. Guardar y salir
+0. Salir
 """)
-
-
-def main():
-    paises = fn.cargar_paises()
-    if not paises:
-        print("No se cargaron registros. Revisá el archivo dataset.csv.")
-    while True:
-        mostrar_menu()
         opcion = input("Seleccioná una opción: ").strip()
-        if opcion == "1":
-            fn.mostrar_paises(paises)
+
+        if opcion == "0":
+            print("Programa finalizado.")
+            break
         elif opcion == "2":
             fn.agregar_pais(paises)
+        elif opcion not in ("1", "3", "4", "5", "6", "7", "8", "9"):
+            print("Opción inválida. Elegí una opción del menú (0 a 9).")
+        elif not paises:
+            # Las demás opciones necesitan al menos un país cargado
+            print("Error: no hay países cargados. Agregá uno primero (opción 2).")
+        elif opcion == "1":
+            fn.mostrar_paises(paises)
         elif opcion == "3":
             fn.actualizar_pais(paises)
         elif opcion == "4":
@@ -42,13 +50,6 @@ def main():
             fn.ordenar_paises(paises)
         elif opcion == "9":
             fn.mostrar_estadisticas(paises)
-        elif opcion == "0":
-            fn.guardar_paises(paises)
-            print("Programa finalizado.")
-            break
-        else:
-            print("Opción inválida. Elegí una opción del menú.")
-
-
-if __name__ == "__main__":
-    main()
+except (KeyboardInterrupt, EOFError):
+    # Ctrl+C o fin de entrada: se sale sin mostrar el error de Python
+    print("\nPrograma interrumpido por el usuario.")

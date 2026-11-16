@@ -270,5 +270,9 @@ def mostrar_estadisticas(paises):
     print(f"{CIAN}Promedio de superficie: {promedio_superficie:,.2f} km²{RESET}")
 
     print(f"{CIAN}\nCantidad de países por continente:{RESET}")
-    for continente, cantidad in sorted(cantidades.items()):
-        print(f"{CIAN}- {continente}: {cantidad}{RESET}")
+    # Gráfico de barras: el continente con más países tiene una barra de 30 bloques
+    # y los demás una barra proporcional a su cantidad.
+    maximo = max(cantidades.values())
+    for continente, cantidad in sorted(cantidades.items(), key=lambda c: c[1], reverse=True):
+        barra = "█" * round(cantidad / maximo * 30)
+        print(f"{CIAN}{continente:<10} {barra} {cantidad}{RESET}")

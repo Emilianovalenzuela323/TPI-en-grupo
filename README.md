@@ -5,15 +5,19 @@ Tecnicatura Universitaria en Programación a Distancia – UTN
 
 ## Descripción
 
-Aplicación de consola en Python 3 que gestiona información de países. Los datos se leen desde `dataset.csv` y se cargan en una **lista de diccionarios** (un diccionario por país con las claves `nombre`, `poblacion`, `superficie` y `continente`). Permite agregar, actualizar, buscar, filtrar, ordenar países y calcular estadísticas. Los cambios se guardan en el CSV en el momento.
+Aplicación de consola en Python 3 que gestiona información de países. Los datos se leen desde
+`dataset.csv` y se cargan en una **lista de diccionarios** (un diccionario por país con las claves
+`nombre`, `poblacion`, `superficie` y `continente`). Permite agregar, actualizar, buscar, filtrar,
+ordenar países y calcular estadísticas. Los cambios se guardan en el CSV en el momento.
 
 ## Estructura del proyecto
 
-Archivo --> Contenido 
-| `main.py` --> Programa principal: carga los datos, muestra el menú y llama a cada opción. No define funciones.
-| `funciones.py` --> Las funciones del sistema: leer/guardar el CSV, mostrar, agregar, actualizar, buscar, filtrar, ordenar y estadísticas.
-| `dataset.csv` --> Dataset base de países.
-| `documentacion.pdf` --> Documentación académica y técnica.
+| Archivo | Contenido |
+|---|---|
+| `main.py` | Programa principal: carga los datos, muestra el menú y llama a cada opción. No define funciones. |
+| `funciones.py` | Las funciones del sistema: leer/guardar el CSV, mostrar, agregar, actualizar, buscar, filtrar, ordenar y estadísticas. |
+| `dataset.csv` | Dataset base de países. |
+| `documentacion.pdf` | Documentación académica y técnica. |
 
 ## Instrucciones de uso
 
@@ -36,6 +40,27 @@ Menú principal:
 8. Ordenar países
 9. Mostrar estadísticas
 0. Salir
+```
+
+## Diagrama de flujo
+
+```mermaid
+flowchart TD
+    A([Inicio]) --> B[Leer dataset.csv]
+    B --> C{¿Filas válidas?}
+    C -- No --> D[Avisar y omitir la fila]
+    D --> E
+    C -- Sí --> E[Lista de diccionarios]
+    E --> F[Mostrar menú]
+    F --> G{Opción elegida}
+    G -- 1, 4 a 9 --> H[Mostrar / buscar / filtrar / ordenar / estadísticas]
+    G -- 2 o 3 --> I[Agregar o actualizar país]
+    I --> J[Guardar en el CSV]
+    G -- inválida --> K[Mensaje de error en rojo]
+    H --> F
+    J --> F
+    K --> F
+    G -- 0 --> L([Fin])
 ```
 
 ## Validaciones
@@ -117,18 +142,23 @@ Promedio de población: 182,959,176.36 hab.
 Promedio de superficie: 2,226,296.08 km²
 
 Cantidad de países por continente:
-- América: 8
-- Asia: 5
-- Europa: 6
-- Oceanía: 2
-- África: 4
+América    ██████████████████████████████ 8
+Europa     ██████████████████████ 6
+Asia       ███████████████████ 5
+África     ███████████████ 4
+Oceanía    ████████ 2
 ```
+
+La cantidad de países por continente se muestra como un **gráfico de barras** hecho con el
+carácter `█`, ordenado de mayor a menor. El continente con más países tiene una barra de 30
+bloques y los demás una barra proporcional (`round(cantidad / maximo * 30)`).
 
 ## Integrantes y participación
 
-- Emiliano Valenzuela: Creó el repositorio del proyecto, Realizó análisis inicial del proyecto, Creó primer borrador del proyecto,
-- Fausto Mariño: Realizó análisis inicial del proyecto, Subió los archivos al repositorio, Corrigió los archivos y el programa,
+- [Nombre y apellido – Integrante 1]: [qué parte realizó]
+- [Nombre y apellido – Integrante 2]: [qué parte realizó]
 
 ## Enlaces
 
 - Video demostrativo: [COMPLETAR – link público]
+- Documentación PDF: `documentacion.pdf` (en la raíz del repositorio)

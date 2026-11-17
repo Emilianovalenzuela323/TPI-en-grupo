@@ -161,4 +161,3 @@ bloques y los demás una barra proporcional (`round(cantidad / maximo * 30)`).
 ## Enlaces
 
 - Video demostrativo: https://youtu.be/VGG0hI3VzjQ
-- Documentación Académica PDF: `documentacion.pdf` (en la raíz del repositorio)

@@ -155,10 +155,10 @@ bloques y los demás una barra proporcional (`round(cantidad / maximo * 30)`).
 
 ## Integrantes y participación
 
-- [Nombre y apellido – Integrante 1]: [qué parte realizó]
-- [Nombre y apellido – Integrante 2]: [qué parte realizó]
+- Emiliano Valenzuela: Creó el repositorio del proyecto, realizó el análisis inicial del proyecto, creó el primer borrador del proyecto, participó en el video y realizó el Slide.
+- Fausto Mariño: Realizó el análisis inicial del proyecto, Subió los archivos al repositorio, corrigió los archivos y el código, participó en el vide y editó el video.
 
 ## Enlaces
 
-- Video demostrativo: [COMPLETAR – link público]
-- Documentación PDF: `documentacion.pdf` (en la raíz del repositorio)
+- Video demostrativo: https://youtu.be/VGG0hI3VzjQ
+- Documentación Académica PDF: `documentacion.pdf` (en la raíz del repositorio)
